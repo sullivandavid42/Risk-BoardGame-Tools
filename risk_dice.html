@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simulateur Blitz Risk</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .input-group {
+            margin: 10px 0;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .tabs {
+            overflow: hidden;
+            border: 1px solid #ccc;
+            border-radius: 5px 5px 0 0;
+        }
+        .tab {
+            float: left;
+            cursor: pointer;
+            padding: 14px 24px;
+            border: none;
+            outline: none;
+            transition: 0.3s;
+            font-size: 16px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .tab:hover {
+            background-color: #e0e0e0;
+        }
+        .tab.active {
+            background-color: #fff;
+            border-bottom: 2px solid #333;
+        }
+        .tab-content {
+            display: none;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-top: none;
+            border-radius: 0 0 5px 5px;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        #result {
+            margin-top: 20px;
+            display: flex;
+            gap: 20px;
+        }
+        #rounds {
+            flex: 1;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        #final-result {
+            flex: 1;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #fff;
+        }
+        .round {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .dice-container {
+            display: flex;
+            gap: 10px;
+            margin: 5px 0;
+        }
+        .die {
+            width: 40px;
+            height: 40px;
+            line-height: 40px;
+            text-align: center;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+            box-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        .attack-die {
+            background-color: #dc3545;
+            border: 1px solid #a71d2a;
+        }
+        .defend-die {
+            background-color: #007bff;
+            border: 1px solid #0056b3;
+        }
+        #probability {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+        }
+        /* Styles spécifiques pour chaque onglet */
+        #tab-desblitz {
+            background-color: #fff;
+            color: #000;
+        }
+        #tab-desblitz:hover {
+            background-color: #e0e0e0;
+            color: #000;
+        }
+        #tab-desblitz.active {
+            background-color: #fff;
+            color: #000;
+        }
+        #tab-sulli {
+            background-color: #ff3333;
+            color: white;
+        }
+        #tab-sulli:hover {
+            background-color: #e62e2e;
+        }
+        #tab-sulli.active {
+            background-color: #fff;
+            color: #ff3333;
+        }
+        #tab-estelle {
+            background-color: #007bff;
+            color: white;
+        }
+        #tab-estelle:hover {
+            background-color: #0069d9;
+        }
+        #tab-estelle.active {
+            background-color: #fff;
+            color: #007bff;
+        }
+        #tab-general {
+            background-color: #28a745;
+            color: white;
+            font-weight: bold;
+        }
+        #tab-general:hover {
+            background-color: #218838;
+        }
+        #tab-general.active {
+            background-color: #fff;
+            color: #28a745;
+        }
+        .dice-icon {
+            width: 20px;
+            height: 20px;
+            display: inline-block;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black"><path d="M20 2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM8 8c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm8 0c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm0 8c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm-8 0c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg>') no-repeat center;
+            background-size: contain;
+        }
+        .globe-icon {
+            width: 20px;
+            height: 20px;
+            display: inline-block;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/></svg>') no-repeat center;
+            background-size: contain;
+        }
+        .secret-mission {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-style: italic;
+        }
+        .player-section {
+            margin-bottom: 20px;
+        }
+        .continent-list {
+            margin-left: 20px;
+        }
+        .continent-list label {
+            display: block;
+            margin: 5px 0;
+        }
+        .reinforcements {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+        }
+        .reinforcements-total {
+            font-weight: bold;
+            color: #d9534f; /* Rouge pour Sulli */
+            font-size: 18px;
+            margin-top: 5px;
+        }
+        #estelle-reinforcements .reinforcements-total {
+            color: #007bff; /* Bleu pour Estelle */
+        }
+        .card-exchange {
+            margin: 20px 0;
+            padding: 10px;
+            background-color: #f1f1f1;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .save-button, .new-game-button {
+            margin-top: 10px;
+            padding: 8px 16px;
+            background-color: #17a2b8;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .new-game-button {
+            background-color: #dc3545;
+        }
+        .save-button:hover {
+            background-color: #138496;
+        }
+        .new-game-button:hover {
+            background-color: #c82333;
+        }
+        .exchange-button {
+            padding: 5px 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .exchange-button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <h1>Simulateur Blitz Risk</h1>
+    
+    <div class="tabs">
+        <button id="tab-desblitz" class="tab active" onclick="openTab(event, 'DesBlitz')">
+            <span class="dice-icon"></span> Dés Blitz
+        </button>
+        <button id="tab-general" class="tab" onclick="openTab(event, 'General')">
+            <span class="globe-icon"></span> Général
+        </button>
+        <button id="tab-sulli" class="tab" onclick="openTabWithConfirmation(event, 'Sulli')">Sulli</button>
+        <button id="tab-estelle" class="tab" onclick="openTabWithConfirmation(event, 'Estelle')">Estelle</button>
+    </div>
+
+    <div id="DesBlitz" class="tab-content active">
+        <div class="input-group">
+            <label for="attackers">Nombre d'attaquants (réduit de 1): </label>
+            <input type="number" id="attackers" min="1" value="2" oninput="calculateProbability()">
+        </div>
+        
+        <div class="input-group">
+            <label for="defenders">Nombre de défenseurs: </label>
+            <input type="number" id="defenders" min="1" value="2" oninput="calculateProbability()">
+        </div>
+        
+        <div id="probability">Probabilité de victoire de l'attaquant : <span id="prob-value">50%</span></div>
+        
+        <button onclick="simulateBlitz()">Lancer le Blitz</button>
+        
+        <div id="result">
+            <div id="rounds"></div>
+            <div id="final-result"></div>
+        </div>
+    </div>
+
+    <div id="Sulli" class="tab-content">
+        <div class="secret-mission" id="sulli-mission">
+            <strong>Mission secrète de Sulli :</strong><br>
+            Occuper 8 territoires en Amérique du Nord (Alaska, Alberta, Ontario, Québec, Groenland, États-Unis occidentaux, États-Unis orientaux, Amérique centrale) et les fortifier avec au moins 2 armées chacun. Cet objectif nécessite de conquérir au moins 8 des 9 territoires d’Amérique du Nord et de les renforcer pour les protéger.
+        </div>
+    </div>
+
+    <div id="Estelle" class="tab-content">
+        <div class="secret-mission" id="estelle-mission">
+            <strong>Mission secrète d'Estelle :</strong><br>
+            Contrôler l’Asie (Sibérie, Iakoutie, Oural, Afghanistan, Chine, Inde, Moyen-Orient, Mongolie, Japon, Kamtchatka) et l’Amérique du Sud (Venezuela, Pérou, Brésil, Argentine), tout en maintenant un minimum de 4 armées par territoire. Cet objectif exige de conquérir 14 territoires au total et de les défendre avec une forte présence militaire.
+        </div>
+    </div>
+
+    <div id="General" class="tab-content">
+        <div class="player-section">
+            <h3>Sulli</h3>
+            <div class="input-group">
+                <label for="sulli-territories">Nombre de territoires contrôlés :</label>
+                <input type="number" id="sulli-territories" min="0" value="0" oninput="saveData()">
+            </div>
+            <div class="continent-list">
+                <h4>Continents contrôlés :</h4>
+                <label><input type="checkbox" class="sulli-continent" onchange="saveData()"> Australie (2)</label>
+                <label><input type="checkbox" class="sulli-continent" onchange="saveData()"> Amérique du Sud (2)</label>
+                <label><input type="checkbox" class="sulli-continent" onchange="saveData()"> Europe (5)</label>
+                <label><input type="checkbox" class="sulli-continent" onchange="saveData()"> Afrique (3)</label>
+                <label><input type="checkbox" class="sulli-continent" onchange="saveData()"> Amérique du Nord (5)</label>
+                <label><input type="checkbox" class="sulli-continent" onchange="saveData()"> Asie (7)</label>
+            </div>
+            <div id="sulli-reinforcements" class="reinforcements"></div>
+        </div>
+        <div class="player-section">
+            <h3>Estelle</h3>
+            <div class="input-group">
+                <label for="estelle-territories">Nombre de territoires contrôlés :</label>
+                <input type="number" id="estelle-territories" min="0" value="0" oninput="saveData()">
+            </div>
+            <div class="continent-list">
+                <h4>Continents contrôlés :</h4>
+                <label><input type="checkbox" class="estelle-continent" onchange="saveData()"> Australie (2)</label>
+                <label><input type="checkbox" class="estelle-continent" onchange="saveData()"> Amérique du Sud (2)</label>
+                <label><input type="checkbox" class="estelle-continent" onchange="saveData()"> Europe (5)</label>
+                <label><input type="checkbox" class="estelle-continent" onchange="saveData()"> Afrique (3)</label>
+                <label><input type="checkbox" class="estelle-continent" onchange="saveData()"> Amérique du Nord (5)</label>
+                <label><input type="checkbox" class="estelle-continent" onchange="saveData()"> Asie (7)</label>
+            </div>
+            <div id="estelle-reinforcements" class="reinforcements"></div>
+        </div>
+        <div class="card-exchange">
+            <h4>Compteur global d'échanges de cartes</h4>
+            <label>Nombre total d'échanges : </label>
+            <input type="number" id="card-exchanges" min="0" value="0" readonly>
+            <button class="exchange-button" onclick="incrementCardExchange()">Échanger</button>
+            <p>Renforts pour le prochain échange : <span id="exchange-bonus">4</span> unités</p>
+        </div>
+        <button class="save-button" onclick="saveData()">Sauvegarder manuellement</button>
+        <button class="new-game-button" onclick="newGame()">Nouvelle partie</button>
+    </div>
+
+    <script>
+        function rollDice() {
+            return Math.floor(Math.random() * 6) + 1;
+        }
+
+        function simulateBattle(attackers, defenders) {
+            let attackDice = Math.min(attackers, 3);
+            let defendDice = Math.min(defenders, 2);
+            
+            let attackRolls = [];
+            let defendRolls = [];
+            
+            for (let i = 0; i < attackDice; i++) {
+                attackRolls.push(rollDice());
+            }
+            for (let i = 0; i < defendDice; i++) {
+                defendRolls.push(rollDice());
+            }
+            
+            let originalAttackRolls = [...attackRolls];
+            let originalDefendRolls = [...defendRolls];
+            
+            attackRolls.sort((a, b) => b - a);
+            defendRolls.sort((a, b) => b - a);
+            
+            let attackLosses = 0;
+            let defendLosses = 0;
+            
+            let comparisons = Math.min(attackRolls.length, defendRolls.length);
+            for (let i = 0; i < comparisons; i++) {
+                if (attackRolls[i] > defendRolls[i]) {
+                    defendLosses++;
+                } else {
+                    attackLosses++;
+                }
+            }
+            
+            return { 
+                attackLosses, 
+                defendLosses,
+                attackRolls: originalAttackRolls,
+                defendRolls: originalDefendRolls 
+            };
+        }
+
+        function simulateOneBattle(attackers, defenders) {
+            let att = attackers;
+            let def = defenders;
+            
+            while (att > 0 && def > 0) {
+                let result = simulateBattle(att, def);
+                att -= result.attackLosses;
+                def -= result.defendLosses;
+            }
+            
+            return def <= 0; // true si l'attaquant gagne
+        }
+
+        function calculateProbability() {
+            let attackers = parseInt(document.getElementById('attackers').value);
+            let defenders = parseInt(document.getElementById('defenders').value);
+            
+            if (attackers < 1 || defenders < 1 || isNaN(attackers) || isNaN(defenders)) {
+                document.getElementById('prob-value').innerText = "N/A";
+                return;
+            }
+
+            const simulations = 10000;
+            let attackerWins = 0;
+            
+            for (let i = 0; i < simulations; i++) {
+                if (simulateOneBattle(attackers, defenders)) {
+                    attackerWins++;
+                }
+            }
+            
+            let probability = (attackerWins / simulations) * 100;
+            document.getElementById('prob-value').innerText = `${probability.toFixed(1)}%`;
+        }
+
+        function simulateBlitz() {
+            let attackers = parseInt(document.getElementById('attackers').value);
+            let defenders = parseInt(document.getElementById('defenders').value);
+            
+            if (attackers < 1) {
+                alert("Il faut au moins 1 attaquant disponible !");
+                return;
+            }
+            if (defenders < 1) {
+                alert("Il faut au moins 1 défenseur !");
+                return;
+            }
+
+            let initialAttackers = attackers;
+            let roundsText = "";
+            let finalText = "";
+            let round = 1;
+            
+            while (attackers > 0 && defenders > 0) {
+                let result = simulateBattle(attackers, defenders);
+                attackers -= result.attackLosses;
+                defenders -= result.defendLosses;
+                
+                roundsText += `<div class="round">`;
+                roundsText += `<strong>Tour ${round}:</strong><br>`;
+                roundsText += `Attaque: ${attackers + result.attackLosses} vs ${defenders + result.defendLosses}<br>`;
+                
+                roundsText += `Dés attaquant:<div class="dice-container">`;
+                result.attackRolls.forEach(roll => {
+                    roundsText += `<div class="die attack-die">${roll}</div>`;
+                });
+                roundsText += `</div>`;
+                
+                roundsText += `Dés défenseur:<div class="dice-container">`;
+                result.defendRolls.forEach(roll => {
+                    roundsText += `<div class="die defend-die">${roll}</div>`;
+                });
+                roundsText += `</div>`;
+                
+                roundsText += `Pertes: ${result.attackLosses} attaquants, ${result.defendLosses} défenseurs`;
+                roundsText += `</div>`;
+                
+                round++;
+            }
+
+            finalText += `<strong>Résultat final:</strong><br>`;
+            if (defenders <= 0) {
+                finalText += "Victoire de l'attaquant !<br>";
+                finalText += `Attaquants restants: ${attackers}<br>`;
+                finalText += `Défenseurs restants: 0<br>`;
+                let minMove = 1;
+                let maxMove = attackers;
+                finalText += `Unités à déplacer: entre ${minMove} et ${maxMove}`;
+            } else {
+                finalText += "Victoire du défenseur !<br>";
+                finalText += `Attaquants restants: ${attackers}<br>`;
+                finalText += `Défenseurs restants: ${defenders}<br>`;
+            }
+
+            document.getElementById('rounds').innerHTML = roundsText;
+            document.getElementById('final-result').innerHTML = finalText;
+        }
+
+        function openTab(event, tabName) {
+            let tabContents = document.getElementsByClassName('tab-content');
+            for (let i = 0; i < tabContents.length; i++) {
+                tabContents[i].classList.remove('active');
+            }
+            
+            let tabs = document.getElementsByClassName('tab');
+            for (let i = 0; i < tabs.length; i++) {
+                tabs[i].classList.remove('active');
+            }
+            
+            document.getElementById(tabName).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
+        function openTabWithConfirmation(event, tabName) {
+            let confirmMessage = `Êtes-vous sûr de vouloir ouvrir l'onglet "${tabName}" ? Cela révélera la mission secrète de ce joueur.`;
+            if (window.confirm(confirmMessage)) {
+                openTab(event, tabName);
+            }
+        }
+
+        const missions = [
+            { id: 1, name: "Éliminer 10 armées neutres au total en attaquant leurs territoires sur la carte, comme l'Alaska ou la Sibérie", difficulty: "Facile" },
+            { id: 2, name: "Contrôler tous les territoires de l’Australie (Australie occidentale, Australie orientale, Nouvelle-Guinée, Indonésie) et les défendre contre toute attaque pendant un tour", difficulty: "Facile" },
+            { id: 3, name: "Contrôler tous les territoires de l’Amérique du Sud (Venezuela, Pérou, Brésil, Argentine) et les maintenir sous votre contrôle", difficulty: "Facile" },
+            { id: 4, name: "Occuper 10 territoires ayant une frontière maritime (ex. : Islande, Groenland, Japon, Venezuela) et les conserver jusqu’à votre prochain tour", difficulty: "Facile" },
+            { id: 5, name: "Conquérir 18 territoires sur la carte, dont au moins 3 en Asie, sans perdre de territoires clés", difficulty: "Moyen" },
+            { id: 6, name: "Contrôler 2 continents complets, à savoir l’Australie et l’Afrique, et les maintenir jusqu’à la fin de votre tour suivant", difficulty: "Moyen" },
+            { id: 7, name: "Contrôler tous les territoires de l’Amérique du Nord (Alaska, Territoire du Nord-Ouest, Alberta, Ontario, Québec, Groenland, États-Unis occidentaux, États-Unis orientaux, Amérique centrale) ou tous ceux de l’Asie plus 8 territoires supplémentaires", difficulty: "Moyen" },
+            { id: 8, name: "Éliminer 15 armées neutres au total en conquérant leurs territoires, y compris en Afrique ou en Sibérie", difficulty: "Moyen" },
+            { id: 9, name: "Contrôler 3 territoires sur chaque continent (Australie, Amérique du Sud, Europe, Afrique, Amérique du Nord, Asie) pour un total de 18 territoires minimum", difficulty: "Moyen" },
+            { id: 10, name: "Réduire votre adversaire à moins de 10 territoires tout en contrôlant au moins 15 territoires vous-même, y compris des territoires en Europe", difficulty: "Moyen" },
+            { id: 11, name: "Contrôler les 4 territoires reliant deux continents (ex. : Alaska et Kamtchatka ou Afrique du Nord et Brésil) et les défendre contre toute tentative d’invasion", difficulty: "Moyen" },
+            { id: 12, name: "Contrôler 12 territoires avec au moins 3 armées sur chacun pour former une forteresse imprenable, incluant des territoires comme l’Ontario et l’Inde", difficulty: "Moyen" },
+            { id: 13, name: "Occuper tous les territoires adjacents à l’Asie (Mongolie, Japon, Kamtchatka, Sibérie, Oural, Afghanistan, Chine, Inde, Moyen-Orient) plus 5 territoires supplémentaires en Amérique du Nord", difficulty: "Difficile" },
+            { id: 14, name: "Contrôler 20 territoires sans posséder un continent complet, en répartissant vos forces sur des territoires comme le Groenland et le Pérou", difficulty: "Difficile" },
+            { id: 15, name: "Posséder exactement 5 territoires sur 4 continents différents (ex. : 5 en Afrique, 5 en Asie, 5 en Europe, 5 en Amérique du Nord)", difficulty: "Difficile" },
+            { id: 16, name: "Contrôler 3 territoires clés bloquant l’accès à l’Europe (Islande, Scandinavie, Europe du Nord) et les tenir contre les assauts adverses", difficulty: "Difficile" },
+            { id: 17, name: "Contrôler tous les territoires de l’Europe (Islande, Scandinavie, Ukraine, Europe du Nord, Europe occidentale, Europe du Sud, Grande-Bretagne) et empêcher l’adversaire d’y entrer pendant un tour", difficulty: "Facile" },
+            { id: 18, name: "Occuper 8 territoires en Amérique du Nord (Alaska, Alberta, Ontario, Québec, Groenland, États-Unis occidentaux, États-Unis orientaux, Amérique centrale) et les fortifier avec au moins 2 armées chacun", difficulty: "Facile" },
+            { id: 19, name: "Contrôler l’Asie (Sibérie, Iakoutie, Oural, Afghanistan, Chine, Inde, Moyen-Orient, Mongolie, Japon, Kamtchatka) et l’Amérique du Sud (Venezuela, Pérou, Brésil, Argentine), tout en maintenant un minimum de 4 armées par territoire", difficulty: "Moyen" },
+            { id: 20, name: "Réduire l’adversaire à moins de 12 territoires en conquérant des territoires clés comme l’Égypte et l’Ukraine, tout en contrôlant au moins 18 territoires", difficulty: "Moyen" },
+            { id: 21, name: "Contrôler tous les territoires adjacents à l’Afrique (Égypte, Afrique du Nord, Moyen-Orient, Est africain) plus 10 territoires supplémentaires en Asie", difficulty: "Difficile" },
+            { id: 22, name: "Posséder 25 territoires sans jamais perdre un combat défensif, en incluant des zones comme l’Australie et l’Amérique centrale", difficulty: "Difficile" }
+        ];
+
+        function generateBalancedMissions() {
+            let shuffledMissions = [...missions].sort(() => Math.random() - 0.5);
+            let mission1 = shuffledMissions[Math.floor(Math.random() * shuffledMissions.length)];
+            let remainingMissions = shuffledMissions.filter(m => m.difficulty === mission1.difficulty || 
+                (mission1.difficulty === "Facile" && m.difficulty === "Moyen") || 
+                (mission1.difficulty === "Moyen" && m.difficulty === "Facile"));
+            let mission2 = remainingMissions[Math.floor(Math.random() * remainingMissions.length)] || 
+                          shuffledMissions[Math.floor(Math.random() * shuffledMissions.length)];
+
+            while (mission2.id === mission1.id) {
+                mission2 = shuffledMissions[Math.floor(Math.random() * shuffledMissions.length)];
+            }
+
+            return [mission1, mission2];
+        }
+
+        function displayMissions() {
+            const [sulliMission, estelleMission] = generateBalancedMissions();
+            document.getElementById('sulli-mission').innerHTML = 
+                `<strong>Mission secrète de Sulli :</strong><br> ${sulliMission.name}`;
+            document.getElementById('estelle-mission').innerHTML = 
+                `<strong>Mission secrète d'Estelle :</strong><br> ${estelleMission.name}`;
+        }
+
+        function saveData() {
+            // Sauvegarde des territoires
+            let sulliTerritories = document.getElementById('sulli-territories').value;
+            let estelleTerritories = document.getElementById('estelle-territories').value;
+
+            // Sauvegarde des cases à cocher pour Sulli
+            let sulliContinents = [];
+            let sulliCheckboxes = document.querySelectorAll('.sulli-continent');
+            sulliCheckboxes.forEach((checkbox, index) => {
+                sulliContinents[index] = checkbox.checked;
+            });
+
+            // Sauvegarde des cases à cocher pour Estelle
+            let estelleContinents = [];
+            let estelleCheckboxes = document.querySelectorAll('.estelle-continent');
+            estelleCheckboxes.forEach((checkbox, index) => {
+                estelleContinents[index] = checkbox.checked;
+            });
+
+            // Sauvegarde du compteur global d'échanges
+            let cardExchanges = document.getElementById('card-exchanges').value;
+
+            // Sauvegarde des missions
+            let savedData = {
+                sulliTerritories,
+                estelleTerritories,
+                sulliContinents,
+                estelleContinents,
+                cardExchanges,
+                sulliMission: document.getElementById('sulli-mission').innerText.replace('Mission secrète de Sulli :\n', ''),
+                estelleMission: document.getElementById('estelle-mission').innerText.replace('Mission secrète d\'Estelle :\n', '')
+            };
+
+            // Sauvegarde dans localStorage
+            localStorage.setItem('riskGameData', JSON.stringify(savedData));
+            calculateReinforcements();
+        }
+
+        function restoreData() {
+            let savedData = localStorage.getItem('riskGameData');
+            if (savedData) {
+                savedData = JSON.parse(savedData);
+
+                // Restaurer les territoires
+                document.getElementById('sulli-territories').value = savedData.sulliTerritories || 0;
+                document.getElementById('estelle-territories').value = savedData.estelleTerritories || 0;
+
+                // Restaurer les cases à cocher pour Sulli
+                let sulliCheckboxes = document.querySelectorAll('.sulli-continent');
+                sulliCheckboxes.forEach((checkbox, index) => {
+                    checkbox.checked = savedData.sulliContinents[index] || false;
+                });
+
+                // Restaurer les cases à cocher pour Estelle
+                let estelleCheckboxes = document.querySelectorAll('.estelle-continent');
+                estelleCheckboxes.forEach((checkbox, index) => {
+                    checkbox.checked = savedData.estelleContinents[index] || false;
+                });
+
+                // Restaurer le compteur global d'échanges
+                document.getElementById('card-exchanges').value = savedData.cardExchanges || 0;
+                updateExchangeBonus();
+
+                // Restaurer les missions
+                document.getElementById('sulli-mission').innerHTML = 
+                    `<strong>Mission secrète de Sulli :</strong><br> ${savedData.sulliMission}`;
+                document.getElementById('estelle-mission').innerHTML = 
+                    `<strong>Mission secrète d'Estelle :</strong><br> ${savedData.estelleMission}`;
+            } else {
+                displayMissions(); // Utiliser la génération aléatoire si pas de données sauvegardées
+                updateExchangeBonus();
+            }
+        }
+
+        function newGame() {
+            if (window.confirm("Êtes-vous sûr de vouloir commencer une nouvelle partie ? Cela effacera toutes les données actuelles et régénérera les missions secrètes.")) {
+                // Réinitialiser les territoires
+                document.getElementById('sulli-territories').value = 0;
+                document.getElementById('estelle-territories').value = 0;
+
+                // Décoche toutes les cases à cocher
+                let allCheckboxes = document.querySelectorAll('#General input[type="checkbox"]');
+                allCheckboxes.forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+
+                // Réinitialiser le compteur global d'échanges
+                document.getElementById('card-exchanges').value = 0;
+                updateExchangeBonus();
+
+                // Effacer les données sauvegardées
+                localStorage.removeItem('riskGameData');
+
+                // Régénérer les missions
+                displayMissions();
+
+                // Recalculer les renforts
+                calculateReinforcements();
+            }
+        }
+
+        function calculateReinforcements() {
+            // Calcul pour Sulli
+            let sulliTerritories = parseInt(document.getElementById('sulli-territories').value) || 0;
+            let sulliBase = Math.max(3, Math.floor(sulliTerritories / 3));
+            let sulliContinentBonus = 0;
+            let sulliCheckboxes = document.querySelectorAll('.sulli-continent:checked');
+            sulliCheckboxes.forEach(checkbox => {
+                let bonus = parseInt(checkbox.nextSibling.textContent.match(/\d+/)[0]);
+                sulliContinentBonus += bonus;
+            });
+            let sulliTotal = Math.max(3, sulliBase + sulliContinentBonus);
+            document.getElementById('sulli-reinforcements').innerHTML = 
+                `<strong>Renforts pour Sulli :</strong><br>` +
+                `Base (territoires / 3, min 3) : ${sulliBase} unités<br>` +
+                `Bonus continents : ${sulliContinentBonus} unités<br>` +
+                `<div class="reinforcements-total">Total à recevoir : ${sulliTotal} unités</div>`;
+
+            // Calcul pour Estelle
+            let estelleTerritories = parseInt(document.getElementById('estelle-territories').value) || 0;
+            let estelleBase = Math.max(3, Math.floor(estelleTerritories / 3));
+            let estelleContinentBonus = 0;
+            let estelleCheckboxes = document.querySelectorAll('.estelle-continent:checked');
+            estelleCheckboxes.forEach(checkbox => {
+                let bonus = parseInt(checkbox.nextSibling.textContent.match(/\d+/)[0]);
+                estelleContinentBonus += bonus;
+            });
+            let estelleTotal = Math.max(3, estelleBase + estelleContinentBonus);
+            document.getElementById('estelle-reinforcements').innerHTML = 
+                `<strong>Renforts pour Estelle :</strong><br>` +
+                `Base (territoires / 3, min 3) : ${estelleBase} unités<br>` +
+                `Bonus continents : ${estelleContinentBonus} unités<br>` +
+                `<div class="reinforcements-total">Total à recevoir : ${estelleTotal} unités</div>`;
+        }
+
+        function incrementCardExchange() {
+            let exchangeInput = document.getElementById('card-exchanges');
+            let exchangeCount = parseInt(exchangeInput.value);
+            exchangeInput.value = exchangeCount + 1;
+            updateExchangeBonus();
+            saveData(); // Sauvegarde après incrémentation
+        }
+
+        function updateExchangeBonus() {
+            let exchangeCount = parseInt(document.getElementById('card-exchanges').value);
+            let bonusElement = document.getElementById('exchange-bonus');
+            let bonus = 0;
+            if (exchangeCount === 0) bonus = 4;
+            else if (exchangeCount === 1) bonus = 6;
+            else if (exchangeCount === 2) bonus = 8;
+            else if (exchangeCount === 3) bonus = 10;
+            else if (exchangeCount === 4) bonus = 12;
+            else if (exchangeCount >= 5) bonus = 15 + 5 * (exchangeCount - 5);
+            bonusElement.textContent = bonus;
+        }
+
+        // Générer les missions et restaurer les données au chargement
+        window.onload = function() {
+            calculateProbability();
+            restoreData();
+            calculateReinforcements();
+            updateExchangeBonus();
+        };
+    </script>
+</body>
+</html>
